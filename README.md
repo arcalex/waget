@@ -15,8 +15,8 @@ Preservation Consortium (IIPC) for publishing.
 
 There are only 2 simple scripts at the moment:
 
-- `list.sh` fetches the list of files in the collection through WASAPI
-- `get.sh` starts the file transfer job in parallel using `llx`
+- `list.sh` fetches the list of files in the collection
+- `get.sh` starts the file transfer in parallel using `llx`
 
 Both scripts expect Archive-It credentials to be in the `~/.netrc` file.
 
@@ -24,11 +24,15 @@ Web Archive Systems API (WASAPI):
 
 https://github.com/WASAPI-Community/data-transfer-apis
 
+See also "Find and download your WARC files with WASAPI":
+
+https://support.archive-it.org/hc/en-us/articles/360015225051-Find-and-download-your-WARC-files-with-WASAPI
+
 Please note that WASAPI, in this context, is not to be confused with the
 Windows Audio Sesion API:
 
 https://docs.microsoft.com/en-us/windows/win32/coreaudio/wasapi
 
-`llx`:
+`get.sh` uses `llx` for parallel execution:
 
 https://github.com/arcalex/llx/
