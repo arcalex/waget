@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 sudo_user="yid"
+export sudo_user
 
 shopt -s nullglob
 
@@ -25,7 +26,8 @@ $0 [-b api-base-url] [-s hooks-dir] id:dir[:start-page[:last-page]] ..."
 
 hooks-dir:
   Directory for scripts to be run on download, each script invoked with
-  the absolute path to the downloaded file and log file as arguments.
+  two arguments: the absolute path to the downloaded file is the first,
+  argument, the absolute path to the log file is the second.
 _E
   exit 0
 }
@@ -164,3 +166,4 @@ done
 echo  # flush the output buffer, often useful after read
 
 # exit code is always 0
+
