@@ -68,9 +68,9 @@ load_name() {
       echo "$json"
       break
     fi
-		
-		c="$(jq -r '.count' <<< "$json")"
-		[ -z "$c" ] || [ "$c" -lt 1 ] && break  # empty page
+
+    c="$(jq -r '.count' <<< "$json")"
+    [ -z "$c" ] || [ "$c" -lt 1 ] && break  # empty page
 
     echo "looking at $id:$page"
 

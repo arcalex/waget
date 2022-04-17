@@ -29,7 +29,7 @@ See also "Find and download your WARC files with WASAPI":
 https://support.archive-it.org/hc/en-us/articles/360015225051-Find-and-download-your-WARC-files-with-WASAPI
 
 Please note that WASAPI, in this context, is not to be confused with the
-Windows Audio Sesion API:
+Windows Audio Session API:
 
 https://docs.microsoft.com/en-us/windows/win32/coreaudio/wasapi
 
