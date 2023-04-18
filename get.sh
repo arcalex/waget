@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Copyright (C) 2021 Bibliotheca Alexandrina
+# Copyright (C) 2021-2022 Bibliotheca Alexandrina
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,5 +15,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-cd warcs
-ls -v ../url.list.d/*|xargs cat|llx_sh -n 66 -d 2 -v -c 'wget -q --accept txt,gz -c --backups=0 $1' >../llx.log 2>&1
+get1=$(dirname "$(readlink -f "$0")")/get1.sh
+
+# E.g., 13529:/vol_e/covid-19
+for x in "$@"; do
+  a=${x%%:*}
+  b=${x#*:}
+
+  echo "Processing collection $x (data)..." >&2
+
+  # meta: md5 sha1 crawl-time filename url size
+  #       1   2    3          4        5   6
+
+  cd "$b/data" && find "$b/meta" -mindepth 1 -maxdepth 1 -exec cut -f5 {} \;|xargs -n1 -P40 sudo -u "$(stat -c %U "$b")" "$get1" 2>"$b/logs/get.retry"
+done

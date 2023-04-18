@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Copyright (C) 2021 Bibliotheca Alexandrina
+# Copyright (C) 2021-2022 Bibliotheca Alexandrina
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,4 +20,5 @@ if [ "$#" -ne 1 ]; then
   exit 1
 fi
 
-wget --accept txt,gz -c --backups=0 "$1"
+# Attempt fetch, print url on failure (rule of silence)
+wget --accept txt,gz -c --backups=0 -t 5 -q "$1" || echo "$1" >&2

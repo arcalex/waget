@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright (C) 2021 Bibliotheca Alexandrina
+# Copyright (C) 2021-2022 Bibliotheca Alexandrina
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,19 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-sudo_user="yid"
-export sudo_user
-
 shopt -s nullglob
 
 usage() {
   cat >&2 <<_E
-$0 [-b api-base-url] [-l] dir ..."
+Usage: $0 [-b api_base_url] [-l] dir"
 
 -l:
-  Use file length to validate instead of checksum.
+  Use file length to validate instead of checksum
 dir:
-  Directory to validate.
+  Directory to validate
 _E
   exit 0
 }
@@ -41,18 +38,22 @@ while getopts b:l opt; do
       ;;
     l) use_length=true
       ;;
+    *) usage
+      ;;
   esac
 done
 
 shift $((OPTIND-1))  # options come first
 
-[ $# = 0 ] && usage
+[ $# != 1 ] && usage
 
 if "$use_length"; then
   echo "checking file length instead of checksum (fast mode)..."
 fi
 
 cd "$1" || exit 1  # collection directory
+
+export sudo_user="$(stat -c %U "$1")"
 
 declare -A ids_stops  # id:page to search next
 declare -A names_jsons  # filename:json
@@ -63,16 +64,18 @@ load_name() {
   page=${ids_stops[$id]} page=${page:-1}
 
   while json="$(sudo -u "$sudo_user" /opt/waget/list1.sh "$page" "$id" "$api_base_url" 2>/dev/null | grep -Eo '\{.+\}$')"; do
+    echo -n "listed page $page" >&2
+
     if ! c="$(jq -r '.count' <<< "$json" 2>/dev/null)"; then
-      echo "server gave up on page $page"
-      echo "$json"
+      echo -n "; no count in page, json " >&2
+      echo "$json" >&2
       break
     fi
 
     c="$(jq -r '.count' <<< "$json")"
     [ -z "$c" ] || [ "$c" -lt 1 ] && break  # empty page
 
-    echo "looking at $id:$page"
+    echo "looking at id $id, page $page..."
 
     # caching names...
     # principle of locality applies here...
@@ -99,8 +102,6 @@ valid=0
 total=0
 
 for f in *.warc.gz; do
-  # echo "file is $f"
-
   # extract id from filename
   id="$(grep -Po '(?<=^ARCHIVEIT-)[0-9]+(?=(-([A-Z]|[0-9]|_)+)+(-[0-9]+){2}-([a-z]|[0-9])+.warc.gz$)' <<< "$f")"
 
@@ -117,10 +118,10 @@ for f in *.warc.gz; do
   echo "loading $f..."
   [ -n "${names_jsons[$f]}" ] || load_name "$f" "$id"
 
-  sums="${names_jsons[$f]}"  # checksums (or size)
+  sums="${names_jsons[$f]}"  # checksum (or size)
 
   if [ -z "$sums" ]; then
-    # still not found... hmmm... maybe it was deleted from the server?
+    # still not found... hmmm... maybe it was deleted on the remote end?
     echo "file $f is not found"
     continue
   fi
@@ -128,12 +129,12 @@ for f in *.warc.gz; do
   echo "loaded $f"
 
   if ( "$use_length" && ! [ "$(du -b "$f" | awk '{print $1}')" = "$sums" ] ) ||
-    ( sha1="$(sha1sum "$f" | cut -d ' ' -f 1)" md5="$(md5sum "$f" | cut -d ' ' -f 1)"  # local checksums
+    ( sha1="$(sha1sum "$f" | cut -d ' ' -f 1)" md5="$(md5sum "$f" | cut -d ' ' -f 1)"  # local checksum
     ! ( "$use_length" || ([ "$sha1" = "$(jq -r '.sha1' <<< "$sums")" ] || [ "$md5" = "$(jq -r '.md5' <<< "$sums")" ]) )); then
 
-    # local and remote checksums (or size) do not match
+    # local and remote checksum (or size) do not match
     echo "file $f is not valid"
-    echo "$f:$sums" >&2  # NOTE: this is the most important echo in the script
+    echo "$f $sums" >&2  # NOTE: this is the most important echo in the script
     # capture stderr to a text file, and you have all you need to schedule re-downloads...
   else
     echo "file $f is valid"

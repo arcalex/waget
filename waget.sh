@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright (C) 2021 Bibliotheca Alexandrina
+# Copyright (C) 2021-2022 Bibliotheca Alexandrina
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -56,17 +56,13 @@ hooks() {
       echo "valid" || echo "not valid")" >&2
   fi
 
-  # invoke every hook script on new files only
+  # invoke every hook script on successfully fetched, new files only
   if [ "$ret" != 0 ]; then
     echo "fetch job returned $ret" >&2
 
-    if [ $? = 8 ]; then
-      echo "server error" >&2
+    # TODO: re-enter fetch job
 
-      # TODO: re-enter waget.sh job in schedule
-
-      exit 1  # this doesn't stop the script, it's on a seperate process
-    fi
+    exit 1  # this doesn't stop the script, it's on a seperate process
   fi
 
   find "$hooks_dir" -mindepth 1 -maxdepth 1 -type f -executable -exec "{}" "$1" \;
@@ -95,10 +91,10 @@ for id_dir in "$@"; do
   id="${id_dir[0]}"
   dest="$(readlink -f "${id_dir[1]}")"
 
-  echo "processing $id:$dest..." >&2
+  echo "processing collection $id:$dest..." >&2
 
   # what to download?
-  page=1  # pagination is not immutable, always start at the beginning
+  page=1  # pagination is not immutabe, always start at the beginning
 
   # NOTE: We might need to mktemp a buffer (for each iteration) for jq
   # to use as the input channel (instead of a pipe), and then as the

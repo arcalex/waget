@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Copyright (C) 2021 Bibliotheca Alexandrina
+# Copyright (C) 2021-2023 Bibliotheca Alexandrina
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,4 +26,4 @@ else
   api_base_url="$3"
 fi
 
-curl --retry 5 --retry-delay 5 --max-time 10 -n "$api_base_url/wasapi/v1/webdata?collection=$2&page=$1"
+curl --retry 5 -m 10 -n -s "$api_base_url/wasapi/v1/webdata?collection=$2&page=$1"
